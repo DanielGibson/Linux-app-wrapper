@@ -7,8 +7,10 @@ your version of the libs is used if it's newer than the one on the system
 and then executes your application.  
 (If an LD_LIBRARY_PATH is already set, the changes from the wrapper will
  be prepended to it)
+ 
+ I wrote a lengthy blogpost about this: http://blog.gibson.sh/2017/11/26/creating-portable-linux-binaries/
 
-This is helpful to create programs for Linux that work on a wide range of
+In short, this is helpful to create programs for Linux that work on a wide range of
 distributions (incl. older and bleeding edge ones), even if they need
 fairly recent versions of the supported libs (e.g. to support C++11 or C++14).  
 By making sure you only override the system libs if the supplied version is newer,
