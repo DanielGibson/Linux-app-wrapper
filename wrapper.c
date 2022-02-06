@@ -26,7 +26,7 @@
  * especially when your users are having them.
  * e.g. $ WRAPPER_DEBUG=1 ./YourGameWrapper
  *
- * (C) 2017 Daniel Gibson
+ * (C) 2017-2022 Daniel Gibson
  *
  * LICENSE
  *   This software is dual-licensed to the public domain and under the following
@@ -66,8 +66,9 @@
 
 
 //
-// usually, you won't have to change anything below this line, unless you want to support
-// additional libs - please send a patch :) - or different architectures with different name mangling
+// usually, you won't have to change anything below this line, unless you want
+// to support newer GCC versions or additional libs - please send a patch :) -
+// or different architectures with different name mangling
 //
 
 #define _GNU_SOURCE
@@ -79,12 +80,12 @@
 #include <unistd.h>
 #include <limits.h>
 
-#define eprintf(...) fprintf(stderr, __VA_ARGS__)
-
 enum { HAVE_64_BIT = (sizeof(void*) == 8) };
 
 static int debugOutput = 0;
-#define dprintf(...) do { if(debugOutput){ printf(__VA_ARGS__); } } while(0);
+#define dprintf(...) do { if(debugOutput){ printf(__VA_ARGS__); } } while(0)
+
+#define eprintf(...) fprintf(stderr, __VA_ARGS__)
 
 #if defined(CHECK_LIBSTDCPP) || defined(CHECK_LIBGCC)
 struct gcc_version_check
@@ -164,7 +165,13 @@ enum stdcpp_gcc_version {
 	STDCPP_GCC_6_1_0, // GLIBCXX_3.4.22, CXXABI_1.3.10
 	STDCPP_GCC_7_1_0, // GLIBCXX_3.4.23, CXXABI_1.3.11
 	STDCPP_GCC_7_2_0, // GLIBCXX_3.4.24, CXXABI_1.3.11 - no function for x86_64
-	// TODO: STDCPP_GCC_8_0_0, // GLIBCXX_3.4.25, CXXABI_1.3.11 - don't have a binary of that to look it up right now
+	STDCPP_GCC_8_1_0, // GLIBCXX_3.4.25, CXXABI_1.3.11
+	STDCPP_GCC_9_1_0, // GLIBCXX_3.4.26, CXXABI_1.3.12
+	STDCPP_GCC_9_2_0, // GLIBCXX_3.4.27, CXXABI_1.3.12
+	STDCPP_GCC_9_3_0, // GLIBCXX_3.4.28, CXXABI_1.3.12
+	//STDCPP_GCC_10_1_0,// GLIBCXX_3.4.28, CXXABI_1.3.12 - same as 9.3.0 ?!
+	STDCPP_GCC_11_1_0,// GLIBCXX_3.4.29, CXXABI_1.3.13
+	//STDCPP_GCC_12_1_0,// GLIBCXX_3.4.30, CXXABI_1.3.?? - not released yet
 	// TODO: add newer versions, once available (also in libstdcpp_version_checks below)
 	_NUM_STDCPP_GCC_VERSIONS
 };
@@ -205,8 +212,15 @@ libstdcpp_version_checks[_NUM_STDCPP_GCC_VERSIONS] =
 	{ "7.1.0", "GLIBCXX_3.4.23", HAVE_64_BIT ? "_ZNSsC1ERKSsmRKSaIcE" : "_ZNSsC1ERKSsjRKSaIcE" },
 	{ "7.2.0", "GLIBCXX_3.4.24", HAVE_64_BIT ? NULL // couldn't find a 64bit function with this version
 	                                         : "_ZNSbIwSt11char_traitsIwESaIwEEC2ERKS2_jRKS1_" },
-	// TODO: 8.0.0 - don't have a binary of that to look it up right now
-	// TODO: add newer versions, once available
+	{ "8.1.0", "GLIBCXX_3.4.25", "_ZNKSt13random_device13_M_getentropyEv" },
+	{ "9.1.0", "GLIBCXX_3.4.26", "_ZNSs4dataEv" },
+	{ "9.2.0", "GLIBCXX_3.4.27", "_ZNSt10filesystem28recursive_directory_iteratoraSERKS0_" },
+	{ "9.3.0", "GLIBCXX_3.4.28", "_ZNSt3pmr15memory_resourceD0Ev" },
+	// { "10.1.0" "GLIBCXX_3.4.28", "" }, - has same symbol version as 9.3.0
+	{ "11.1.0", "GLIBCXX_3.4.29", "_ZNSs7reserveEv" },
+	//{ "12.1.0", "GLIBCXX_3.4.30", "_ZSt21__glibcxx_assert_failPKciS0_S0_" }, // TODO: VERIFY!! based on pre-release version (debian 12-20220126-1)
+	
+	// TODO: add new versions once available
 };
 
 static enum stdcpp_gcc_version get_libstdcpp_version(const char* path)
@@ -235,7 +249,11 @@ enum libgcc_version {
 	LIBGCC_4_6_0, // GCC_4.6.0 - no function with that version
 	LIBGCC_4_7_0, // GCC_4.7.0
 	LIBGCC_4_8_0, // GCC_4.8.0
-	// TODO: add new versions, if any (at least up to gcc 7.2.0 all seem to use libgcc 4.8.0)
+	// apparently no new functions were added (in x86/amd64) until 7.0.0
+	LIBGCC_7_0_0, // GCC_7.0.0
+	// apparently no new functions were added (in x86/amd64) until 12.0.0
+	//LIBGCC_12_0_0, // GCC_12.0.0 - commented out for now, because GCC12 isn't released yet
+	// TODO: add new versions, if any
 	_NUM_LIBGCC_VERSIONS
 };
 
@@ -245,7 +263,7 @@ libgcc_version_checks[_NUM_LIBGCC_VERSIONS] =
 	{ "3.0.0", "GCC_3.0", "__mulvsi3" },
 	{ "3.3.0", "GCC_3.3", "_Unwind_Backtrace" },
 	{ "3.3.1", "GCC_3.3.1", "__gcc_personality_v0" },
-	{ "3.3.2", "GCC_3.3.2", NULL }, // no function with this version in libgcc
+	{ "3.3.2", "GCC_3.3.2", NULL }, // no function with this version in i686 and amd64 libgcc
 	{ "3.3.4", "GCC_3.3.4", NULL }, // ditto
 	{ "3.4.0", "GCC_3.4",   "__paritydi2" },
 	{ "3.4.2", "GCC_3.4.2", "__enable_execute_stack" },
@@ -258,7 +276,9 @@ libgcc_version_checks[_NUM_LIBGCC_VERSIONS] =
 	{ "4.5.0", "GCC_4.5.0", HAVE_64_BIT ? NULL : "__extendxftf2" }, // ditto
 	{ "4.6.0", "GCC_4.6.0", NULL }, // no function for that version at all
 	{ "4.7.0", "GCC_4.7.0", "__clrsbdi2" },
-	{ "4.8.0", "GCC_4.8.0", "__cpu_indicator_init" }
+	{ "4.8.0", "GCC_4.8.0", "__cpu_indicator_init" },
+	{ "7.0.0", "GCC_7.0.0", HAVE_64_BIT ? "__divmodti4" : "__divmoddi4" },
+	//{ "12.0.0","GCC_12.0.0", "__nehf2" }, // NOTE: based on pre-release version (debian 12-20220126-1), commented out until release
 	// TODO: add new versions
 };
 
@@ -511,7 +531,7 @@ static int set_ld_library_path(void)
 	{
 		if(fallback_libs[i].use)
 		{
-			// using strcat() here is safe becaues we checked the lengths above
+			// using strcat() here is safe because we checked the lengths above
 			// and set len accordingly
 			strcat(new_val, wrapper_exe_dir);
 			strcat(new_val, "/");
@@ -531,7 +551,12 @@ static int set_ld_library_path(void)
 
 	int ret = (setenv("LD_LIBRARY_PATH", new_val, 1) == 0);
 
-	dprintf("Set LD_LIBRARY_PATH to '%s'\n", new_val);
+	if(ret) {
+		dprintf("Set LD_LIBRARY_PATH to '%s'\n", new_val);
+	} else {
+		int e = errno;
+		eprintf("Failed to set LD_LIBRARY_PATH to '%s' : errnno %d (%s)\n", new_val, e, strerror(e));
+	}
 
 	free(new_val);
 	return ret;
@@ -559,7 +584,8 @@ static void run_executable(char** argv)
 	}
 	else if(execv(full_exe_path, argv) < 0)
 	{
-		eprintf("Executing %s failed: %s\n", APP_EXECUTABLE, strerror(errno));
+		int e = errno;
+		eprintf("Executing %s failed: errno %d (%s)\n", APP_EXECUTABLE, e, strerror(e));
 	}
 	// else, if execv() was successful, this function never returns
 }
