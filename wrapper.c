@@ -170,8 +170,10 @@ enum stdcpp_gcc_version {
 	STDCPP_GCC_9_2_0, // GLIBCXX_3.4.27, CXXABI_1.3.12
 	STDCPP_GCC_9_3_0, // GLIBCXX_3.4.28, CXXABI_1.3.12
 	//STDCPP_GCC_10_1_0,// GLIBCXX_3.4.28, CXXABI_1.3.12 - same as 9.3.0 ?!
-	STDCPP_GCC_11_1_0,// GLIBCXX_3.4.29, CXXABI_1.3.13
-	//STDCPP_GCC_12_1_0,// GLIBCXX_3.4.30, CXXABI_1.3.?? - not released yet
+	STDCPP_GCC_11_1_0, // GLIBCXX_3.4.29, CXXABI_1.3.13
+	STDCPP_GCC_12_1_0, // GLIBCXX_3.4.30, CXXABI_1.3.13
+	STDCPP_GCC_13_1_0, // GLIBCXX_3.4.31, CXXABI_1.3.14
+	STDCPP_GCC_13_2_0, // GLIBCXX_3.4.32, CXXABI_1.3.14
 	// TODO: add newer versions, once available (also in libstdcpp_version_checks below)
 	_NUM_STDCPP_GCC_VERSIONS
 };
@@ -218,8 +220,9 @@ libstdcpp_version_checks[_NUM_STDCPP_GCC_VERSIONS] =
 	{ "9.3.0", "GLIBCXX_3.4.28", "_ZNSt3pmr15memory_resourceD0Ev" },
 	// { "10.1.0" "GLIBCXX_3.4.28", "" }, - has same symbol version as 9.3.0
 	{ "11.1.0", "GLIBCXX_3.4.29", "_ZNSs7reserveEv" },
-	//{ "12.1.0", "GLIBCXX_3.4.30", "_ZSt21__glibcxx_assert_failPKciS0_S0_" }, // TODO: VERIFY!! based on pre-release version (debian 12-20220126-1)
-	
+	{ "12.1.0", "GLIBCXX_3.4.30", "_ZSt21__glibcxx_assert_failPKciS0_S0_" },
+	{ "13.1.0", "GLIBCXX_3.4.31", "_ZSt8to_charsPcS_DF128_" },
+	{ "13.2.0", "GLIBCXX_3.4.32", "_ZSt21ios_base_library_initv" },
 	// TODO: add new versions once available
 };
 
@@ -252,7 +255,8 @@ enum libgcc_version {
 	// apparently no new functions were added (in x86/amd64) until 7.0.0
 	LIBGCC_7_0_0, // GCC_7.0.0
 	// apparently no new functions were added (in x86/amd64) until 12.0.0
-	//LIBGCC_12_0_0, // GCC_12.0.0 - commented out for now, because GCC12 isn't released yet
+	LIBGCC_12_1_0, // GCC_12.0.0
+	LIBGCC_13_1_0, // GCC_13.0.0
 	// TODO: add new versions, if any
 	_NUM_LIBGCC_VERSIONS
 };
@@ -278,7 +282,8 @@ libgcc_version_checks[_NUM_LIBGCC_VERSIONS] =
 	{ "4.7.0", "GCC_4.7.0", "__clrsbdi2" },
 	{ "4.8.0", "GCC_4.8.0", "__cpu_indicator_init" },
 	{ "7.0.0", "GCC_7.0.0", HAVE_64_BIT ? "__divmodti4" : "__divmoddi4" },
-	//{ "12.0.0","GCC_12.0.0", "__nehf2" }, // NOTE: based on pre-release version (debian 12-20220126-1), commented out until release
+	{ "12.1.0","GCC_12.0.0", "__nehf2" },
+	{ "13.1.0","GCC_13.0.0", "__truncdfbf2" },
 	// TODO: add new versions
 };
 
