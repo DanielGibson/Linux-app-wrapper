@@ -26,7 +26,7 @@
  * especially when your users are having them.
  * e.g. $ WRAPPER_DEBUG=1 ./YourGameWrapper
  *
- * (C) 2017-2022 Daniel Gibson
+ * (C) 2017-2023 Daniel Gibson
  *
  * LICENSE
  *   This software is dual-licensed to the public domain and under the following
@@ -454,8 +454,9 @@ static int check_fallback_libs(void)
 	                                                          (int)sdl_our_ver.major, (int)sdl_our_ver.minor, (int)sdl_our_ver.patch);
 	if( sdl_our_ver.major != 0 // otherwise it hasn't been found
 	   && (sdl_sys_ver.major != sdl_our_ver.major // changes to the major version break the API/ABI
-	       || sdl_sys_ver.minor != sdl_our_ver.minor // same for minor, so don't use system lib if they're different
-	       || sdl_sys_ver.patch < sdl_our_ver.patch) )
+	       // minor versions don't break API/ABI (has been decided with 2.24.0 which followed 2.0.22)
+	       || sdl_sys_ver.minor < sdl_our_ver.minor
+	       || (sdl_sys_ver.minor == sdl_our_ver.minor && sdl_sys_ver.patch < sdl_our_ver.patch) ) )
 	{
 		dprintf("Overwriting System libSDL2\n");
 		fallback_libs[fb_lib_idx].use = 1;
